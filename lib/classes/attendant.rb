@@ -13,19 +13,23 @@ class Attendant
 
   def initialize
     @id = SecureRandom.uuid
+    @mutex = Mutex.new
   end
 
   def request_ticket(queue)
     ticket = nil
-    mutex.synchronize { ticket = queue.remove_ticket }
+    queue.mutex.synchronize { ticket = queue.remove_item }
     serve_client(ticket) if ticket
   end
 
   def serve_client(ticket)
-    puts "Attendant ##{id} with ticket ##{ticket.id}"
-    sleep(rand(1..10)) # Simula tempo do atendimento
-    ticket.assign_attendant(id)
-    ticket.mark_complete
-    puts "Attendant ##{id}. Ticket completed in ##{client.ticket.completed_at - client.ticket.created_at}"
+    @mutex.synchronize do
+      puts "Attendant ##{id} with ticket ##{ticket.id}"
+      sleep(rand(1..10)) # Simula tempo do atendimento
+      ticket.assign_attendant(id)
+      ticket.mark_complete
+      puts "Attendant ##{id}. Ticket completed in ##{client.ticket.completed_at - client.ticket.created_at}"
+      
+    end
   end
 end

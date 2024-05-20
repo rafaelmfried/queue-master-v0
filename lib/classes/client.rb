@@ -5,7 +5,8 @@ class Client
   class << self
     def create_client(queue)
       client = new
-      client.request_ticket(queue)
+      ticket = client.request_ticket(queue)
+      ticket.assign_client(client.id)
       client
     end
   end
@@ -18,6 +19,8 @@ class Client
   end
 
   def request_ticket(queue)
-    @ticket = queue.add_ticket
+    queue.mutex.synchronize do
+      @ticket = queue.add_item
+    end
   end
 end

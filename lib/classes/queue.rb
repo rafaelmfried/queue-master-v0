@@ -1,35 +1,36 @@
-require 'classes/ticket'
+class BlockingQueue
+  class << self
+    def create_queue
+      new
+    end
+  end
 
-class Queue
-  attr_reader :tickets
+  private_class_method :new
+
+  attr_reader :queue
 
   def initialize
-    @tickets = Array.new
+    @queue = Array.new
     @mutex = Mutex.new
-    @ticket_available = ConditionVariable.new
+    @item_available = ConditionVariable.new
   end
 
-  def add_ticket
-    ticket = Ticket.new
+  def add_item(item)
     @mutex.synchronize do
-      @tickets << ticket
-      @ticket_available.signal
+      @queue.push(item)
+      @item_available.signal
     end
-    ticket
+    item
   end
 
-  def remove_ticket
-    ticket = nil
+  def remove_item
     @mutex.synchronize do
-      while @tickets.empty?
-        @ticket_available.wait(@mutex)
-      end
-      ticket = @tickets.shift
+      @item_available.wait(@mutex) while @queue.empty?
+      @queue.shift
     end
-    ticket
   end
 
   def empty?
-    @tickets.nil? || @tickets.empty?
+    @mutex.synchronize { @queue.nil? || @queue.empty? }
   end
 end
