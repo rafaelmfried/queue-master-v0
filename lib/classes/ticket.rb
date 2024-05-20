@@ -7,13 +7,18 @@ class Ticket
     end
   end
   
-  attr_reader :id, :created_at, :completed_at, :attendant_id
+  attr_reader :id, :created_at, :completed_at, :client_id, :attendant_id
 
   def initialize
     @id = SecureRandom.uuid
     @created_at = Time.now
     @completed_at = nil
+    @client_id = nil
     @attendant_id = nil
+  end
+
+  def assign_client(client_id)
+    @client_id = client_id    
   end
 
   def assign_attendant(attendant_id)

@@ -18,7 +18,7 @@ class Attendant
 
   def request_ticket(queue)
     ticket = nil
-    queue.mutex.synchronize { ticket = queue.remove_ticket }
+    queue.mutex.synchronize { ticket = queue.remove_item }
     serve_client(ticket) if ticket
   end
 
