@@ -1,6 +1,12 @@
 require 'securerandom'
 
-class Ticket 
+class Ticket
+  class << self
+    def generate_ticket
+      new
+    end
+  end
+  
   attr_reader :id, :created_at, :completed_at, :attendant_id
 
   def initialize

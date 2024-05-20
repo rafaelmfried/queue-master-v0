@@ -18,6 +18,8 @@ class Client
   end
 
   def request_ticket(queue)
-    @ticket = queue.add_ticket
+    queue.mutex.synchronize do
+      @ticket = queue.add_ticket
+    end
   end
 end

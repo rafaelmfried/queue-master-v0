@@ -1,41 +1,18 @@
-require 'classes/queue_master'
-require 'classes/queue'
-require 'classes/client'
-require 'classes/attendant'
-require 'thread'
-
 class QueueController < ApplicationController
-  def index
-    queue = Queue.new
-    mutex = Mutex.new
+  before_action :set_queue
 
-    client_array = []
-
-    # Thread para adicionar clientes à fila
-    client_thread = Thread.new do
-      100.times do
-        client = nil
-        mutex.synchronize { client = Client.create_client(queue) }
-        client_array.add(client) if client
-      end
+  def show
+    @ticket = @queue.next_ticket
+    if @ticket
+      render :show, status: :ok
+    else
+      render json: { error: 'No tickets available' }, status: :not_found
     end
+  end
 
-    # Threads para os atendentes
-    attendant_threads = Array.new(2) do
-      Thread.new do
-        attendant = Attendant.create_attendant
-        loop do
-          ticket = nil
-          mutex.synchronize { ticket = attendant.request_ticket(queue) unless queue.empty? }
-          attendant.request_ticket if ticket
-        end
-      end
-    end
+  private
 
-    # Aguardar a conclusão das threads
-    client_thread.join
-    attendant_threads.each(&:join)
-
-    render plain: "Teste de inclusão do diretório lib bem-sucedido!"
+  def set_queue
+    @queue = TicketQueue.create_queue
   end
 end

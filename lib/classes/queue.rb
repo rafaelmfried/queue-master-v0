@@ -7,7 +7,7 @@ class BlockingQueue
 
   private_class_method :new
 
-  attr_reader :tickets
+  attr_reader :queue
 
   def initialize
     @queue = Array.new
@@ -20,15 +20,13 @@ class BlockingQueue
       @queue.push(item)
       @item_available.signal
     end
-    ticket
+    item
   end
 
   def remove_item
     @mutex.synchronize do
-      while @queue.empty?
-        @item_available.wait(@mutex) while @queue.empty?
-        @queue.shift
-      end
+      @item_available.wait(@mutex) while @queue.empty?
+      @queue.shift
     end
   end
 
